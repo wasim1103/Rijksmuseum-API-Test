@@ -7,114 +7,3304 @@
 	},
 	"item": [
 		{
-			"name": "GetListofCollections",
-			"event": [
+			"name": "nl",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response contains collections\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
-							"    pm.expect(jsonData.artObjects.length).to.be.above(0);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Each collection item has required fields\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    jsonData.artObjects.forEach(function(item) {\r",
-							"        pm.expect(item).to.have.property('objectNumber');\r",
-							"        pm.expect(item).to.have.property('title');\r",
-							"        pm.expect(item).to.have.property('principalOrFirstMaker');\r",
-							"    });\r",
-							"});\r",
-							"pm.globals.set(\"variable_key\", \"variable_value\");\r",
-							"pm.globals.set(\"variable_key\", \"variable_value\");"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/en/collection?key={{key}}&ps=10",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"en",
-						"collection"
-					],
-					"query": [
+					"name": "Verify_Collection_Having_Records_With_Required_Fields_&_Default_Setting",
+					"event": [
 						{
-							"key": "key",
-							"value": "{{key}}"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response contains collections\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    pm.expect(jsonData.artObjects.length).to.be.above(0);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response is in JSON format\", function () {\r",
+									"    //pm.response.to.be.header('Content-Type', /application/json);  // Check that Content-Type is application/json\r",
+									"    pm.response.to.have.jsonBody;  // Ensure the body is valid JSON\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response structure is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   pm.expect(jsonData).to.have.property(\"countFacets\");\r",
+									"   pm.expect(jsonData).to.have.property(\"artObjects\");\r",
+									"   pm.expect(jsonData).to.have.property(\"facets\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify collection response has required fields\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property('count');    \r",
+									"    pm.expect(jsonData).to.have.property('facets');\r",
+									"\r",
+									"    jsonData.artObjects.forEach(function(item) {\r",
+									"        pm.expect(item).to.have.property('id');\r",
+									"        pm.expect(item).to.have.property('objectNumber');\r",
+									"        pm.expect(item).to.have.property('title');\r",
+									"        pm.expect(item).to.have.property('principalOrFirstMaker'); \r",
+									"        pm.expect(item).to.have.property('longTitle');\r",
+									"        pm.expect(item).to.have.property('webImage');\r",
+									"        pm.expect(item).to.have.property('headerImage');\r",
+									"        //pm.expect(item).to.have.property('toppieces');            \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"//console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Verify that the count of art objects is equal to the total count\r",
+									"pm.test(\"Verify by default pagesize is 10\", function () {\r",
+									"    //pm.expect(countOfArtObjects).to.be.a('number');\r",
+									"    pm.expect(countOfArtObjects).is.equal(10); // Assuming page size is 10\r",
+									"});\r",
+									"\r",
+									"// Test to check that all objects have images when imgonly is true by default\r",
+									"pm.test(\"Verify by default imgonly have set to false for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {        \r",
+									"        pm.expect(artObject.hasImage).to.be.false;             \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"// Test to check that toppieces is false by default\r",
+									"pm.test(\"Verify by default toppieces have set to false for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {\r",
+									"        // Since toppieces defaults to false, we expect none of the art objects to be marked as toppieces\r",
+									"        pm.expect(artObject.toppieces).to.be.false;\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"// Extract the 'id' of the first art object\r",
+									"let lastArtObjectId = responseData.artObjects[9].id;\r",
+									"let objectNumber = responseData.artObjects[0].objectNumber;\r",
+									"let title = responseData.artObjects[0].title;\r",
+									"let principalOrFirstMaker = responseData.artObjects[0].principalOrFirstMaker;\r",
+									"let hasImage = responseData.artObjects[3].hasImage;\r",
+									"let webguid = responseData.artObjects[0].webImage.guid;\r",
+									"\r",
+									"// Log the 'id' 'objectNumber' to the Postman console\r",
+									"//console.log(\"Extracted artObject id of page 0: \" + lastArtObjectId);\r",
+									"//console.log(\"Extracted objectNumber of page 0: \" + objectNumber);\r",
+									"//console.log(\"Extracted title of page 0: \" + title);\r",
+									"//console.log(\"Extracted principalOrFirstMaker of page 0: \" + principalOrFirstMaker);\r",
+									"//console.log(\"Extracted hasImage of page 0: \" + hasImage);\r",
+									"//console.log(\"Extracted webguid of page 0: \" + webguid);\r",
+									"\r",
+									"// Store the 'id' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"artObjectId\", lastArtObjectId);  // For collection variable\r",
+									"\r",
+									"// Store the 'objectNumber' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"objectNumber\", objectNumber);  // For collection variable\r",
+									"\r",
+									"// Store the 'title' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"title\", title);  // For collection variable\r",
+									"\r",
+									"// Store the 'principalOrFirstMaker' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"principalOrFirstMaker\", principalOrFirstMaker);  // For collection variable\r",
+									"\r",
+									"// Store the 'hasImage' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"hasImage\", hasImage);  // For collection variable\r",
+									"\r",
+									"// Store the 'webguid' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"webguid\", webguid);  // For collection variable"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						},
 						{
-							"key": "ps",
-							"value": "10"
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					]
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Showing_Records_With_No_Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"//console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Test to check that all objects have images when imgonly is true by default\r",
+									"pm.test(\"Verify imgonly have set to false for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {        \r",
+									"        pm.expect(artObject.hasImage).to.be.false;             \r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&imgonly=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "imgonly",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_q",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if any object has 'Rembrandt' in any field\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if the response is an array and has objects\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    \r",
+									"    var found = jsonData.artObjects.some(function (item) {\r",
+									"        // Convert object values to a string and check if 'Rembrandt' is present\r",
+									"        return Object.values(item).some(function (value) {\r",
+									"            return value === 'Rembrandt';\r",
+									"        });\r",
+									"    });\r",
+									"    \r",
+									"    pm.expect(found).to.be.true; // Assert that at least one object has 'Rembrandt'\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&q=Rembrandt",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "q",
+									"value": "Rembrandt"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_involvedMaker",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt' in each artObject\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    \r",
+									"    // Check if the response contains 'artObjects' and it's an array\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    \r",
+									"    // Loop over each artObject\r",
+									"    jsonData.artObjects.forEach(function (item) {\r",
+									"        // Check if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt'\r",
+									"        pm.expect(item.principalOrFirstMaker).to.eql('Johan Gregor van der Schardt');\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&involvedMaker=Johan Gregor van der Schardt",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "involvedMaker",
+									"value": "Johan Gregor van der Schardt"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_f.dating.period",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if f.dating is in 10th century in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[2]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[2].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[2].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[2].facets[0];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('10');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&f.dating.period=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "f.dating.period",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_f.normalized32Colors.hex",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if f.normalized32Colors.hex is #F49B7A in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[6]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[6].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[6].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[6].facets[0];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('#F49B7A');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&f.normalized32Colors.hex=%23F49B7A",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "f.normalized32Colors.hex",
+									"value": "%23F49B7A"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_toppieces",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"//console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Test to check that toppieces is false by default\r",
+									"pm.test(\"Verify toppieces have set to true for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {\r",
+									"        // Since toppieces defaults to false, we expect none of the art objects to be marked as toppieces\r",
+									"        pm.expect(artObject.toppieces).to.be.true;\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&toppieces=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "toppieces",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Multiple_Filter_On_InvolvedMaker,f.datingperiod,imgonly,f.normalized32Colors.hex",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify collection response has required fields\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property('count');    \r",
+									"    pm.expect(jsonData).to.have.property('facets');\r",
+									"\r",
+									"    jsonData.artObjects.forEach(function(item) {\r",
+									"        pm.expect(item).to.have.property('id');\r",
+									"        pm.expect(item).to.have.property('objectNumber');\r",
+									"        pm.expect(item).to.have.property('title');\r",
+									"        pm.expect(item).to.have.property('principalOrFirstMaker'); \r",
+									"        pm.expect(item).to.have.property('longTitle');\r",
+									"        pm.expect(item).to.have.property('webImage');\r",
+									"        pm.expect(item).to.have.property('headerImage');\r",
+									"        //pm.expect(item).to.have.property('toppieces');            \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt' in each artObject\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    \r",
+									"    // Check if the response contains 'artObjects' and it's an array\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    \r",
+									"    // Loop over each artObject\r",
+									"    jsonData.artObjects.forEach(function (item) {\r",
+									"        // Check if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt'\r",
+									"        pm.expect(item.principalOrFirstMaker).to.eql('Johan Gregor van der Schardt');\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Verify imgonly have set to true for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {        \r",
+									"        pm.expect(artObject.hasImage).to.be.true;             \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify if f.dating is in 16th century in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[2]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[2].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[2].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[2].facets[0];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('16');\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if f.normalized32Colors.hex is #737C84 in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[6]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[6].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[6].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[6].facets[2];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('#737C84');\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&imgonly=true&involvedMaker=Johan Gregor van der Schardt&f.dating.period=16&f.normalized32Colors.hex=%23737C84",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "imgonly",
+									"value": "true"
+								},
+								{
+									"key": "involvedMaker",
+									"value": "Johan Gregor van der Schardt"
+								},
+								{
+									"key": "f.dating.period",
+									"value": "16"
+								},
+								{
+									"key": "f.normalized32Colors.hex",
+									"value": "%23737C84"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Showing_On_Single_Page_When_PageSize_Is_Set_To_Maximum_Limit_To_100",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Verify that the count of art objects is equal to the total count\r",
+									"pm.test(\"Verify pagesize is 100\", function () {\r",
+									"    //pm.expect(countOfArtObjects).to.be.a('number');\r",
+									"    pm.expect(countOfArtObjects).is.equal(100); // Assuming page size is 10\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&ps=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "ps",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Showing_On_Multiple_Pages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Loop over the artObjects array and check for page 0 object id\r",
+									"let found = false; // Flag to track if the id is found\r",
+									"\r",
+									"responseData.artObjects.forEach(function(artObject) {\r",
+									"    // Log each id for debugging purposes (optional)\r",
+									"    console.log(\"Checking id: \" + artObject.id);\r",
+									"    \r",
+									"    // Check if the id matches\r",
+									"    if (artObject.id === pm.collectionVariables.get(\"artObjectId\")) {\r",
+									"        found = true;\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"// Fail the test if Verify object id of page 0 is present\r",
+									"pm.test(\"Verify object id of page 0 is not present on page 1\", function() {\r",
+									"    pm.expect(found).to.be.false;  // Fail the test if found is true\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&p=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "p",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Sorted_By_Artist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"let artObjects = responseData.artObjects;\r",
+									"\r",
+									"// Check if artObjects are sorted by artist in ascending order\r",
+									"pm.test(\"Verify results are sorted by artist in ascending order\", function () {\r",
+									"    let isSorted = true;\r",
+									"\r",
+									"    for (let i = 1; i < artObjects.length; i++) {\r",
+									"        // Compare the current artist with the previous artist\r",
+									"        if (artObjects[i].principalOrFirstMaker < artObjects[i - 1].principalOrFirstMaker) {\r",
+									"            isSorted = false;\r",
+									"            break; // No need to check further if already not sorted\r",
+									"        }\r",
+									"    }\r",
+									"\r",
+									"    pm.expect(isSorted).to.be.true;\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&s=artist",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "s",
+									"value": "artist"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Having_Detail_With_Required_Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify response contains object detail and it is not empty\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.artObject).to.be.an('object');\r",
+									"    pm.expect(Object.keys(jsonData.artObject).length).to.be.above(0);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response is in JSON format\", function () {\r",
+									"    //pm.response.to.be.header('Content-Type', /application/json);  // Check that Content-Type is application/json\r",
+									"    pm.response.to.have.jsonBody;  // Ensure the body is valid JSON\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response structure is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   pm.expect(jsonData).to.have.property(\"artObject\");\r",
+									"   pm.expect(jsonData).to.have.property(\"artObjectPage\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"webImage\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify object has required fields\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"title\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"principalOrFirstMaker\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"description\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"materials\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"dating\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"documentation\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"dimensions\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection/{{objectNumber}}?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection",
+								"{{objectNumber}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Having_Valid_Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Search link is correct\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.artObject.links.search).to.eql(\"http://www.rijksmuseum.nl/api/en/collection\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Collection ID is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var objNumber = pm.collectionVariables.get(\"objectNumber\");   \r",
+									"   pm.expect(jsonData.artObject.objectNumber).to.eql(objNumber);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Title is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var title = pm.collectionVariables.get(\"title\");\r",
+									"   pm.expect(jsonData.artObject.title).to.eql(title); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify PrincipalOrFirstMaker is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var principalOrFirstMaker = pm.collectionVariables.get(\"principalOrFirstMaker\");\r",
+									"   pm.expect(jsonData.artObject.principalOrFirstMaker).to.eql(principalOrFirstMaker); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify hasImage is having correct flag set\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var hasImage = pm.collectionVariables.get(\"hasImage\");   \r",
+									"   pm.expect(jsonData.artObject.hasImage).to.eql(hasImage); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify webguid is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var webguid = pm.collectionVariables.get(\"webguid\");   \r",
+									"   pm.expect(jsonData.artObject.webImage.guid).to.eql(webguid); \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection/{{objectNumber}}?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection",
+								"{{objectNumber}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_Is_In_XML_Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify collection response is in XML format\", function () {\r",
+									"    // Check the Content-Type header\r",
+									"    var contentType = pm.response.headers.get(\"Content-Type\");\r",
+									"    pm.expect(contentType).to.include(\"application/xml\");\r",
+									"    \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&format=xml",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "format",
+									"value": "xml"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Detail_Response_Is_In_XML_Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify object detail is in XML format\", function () {\r",
+									"    // Check the Content-Type header\r",
+									"    var contentType = pm.response.headers.get(\"Content-Type\");\r",
+									"    pm.expect(contentType).to.include(\"application/xml\");\r",
+									"    \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection/{{objectNumber}}?key={{key}}&format=xml",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection",
+								"{{objectNumber}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "format",
+									"value": "xml"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_key_Is_Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_key_Is_Missing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Detail_Response_When_ObjectNumber_Is_Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection/{{objectNumber}}1?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection",
+								"{{objectNumber}}1"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Detail_Response_When_ObjectNumber_Is_Missing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection/?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection",
+								""
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_q_is_invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Expected Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&q=%23",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "q",
+									"value": "%23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_f.dating.period_is_invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Expected Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/nl/collection?key={{key}}&f.dating.period=january",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nl",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "f.dating.period",
+									"value": "january"
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "GetObjectDetail",
-			"event": [
+			"name": "en",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response contains object details\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.artObject).to.have.property('id');\r",
-							"    pm.expect(jsonData.artObject).to.have.property('title');\r",
-							"    pm.expect(jsonData.artObject).to.have.property('principalMaker');\r",
-							"});\r",
-							"\r",
-							"/*pm.test(\"Title is correct\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.artObject.title).to.eql(\"The Night Watch\");\r",
-							"});*/"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/en/collection/SK-C-5?key={{key}}",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"en",
-						"collection",
-						"SK-C-5"
-					],
-					"query": [
+					"name": "Verify_Collection_Having_Records_With_Required_Fields_&_Default_Setting",
+					"event": [
 						{
-							"key": "key",
-							"value": "{{key}}"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response contains collections\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    pm.expect(jsonData.artObjects.length).to.be.above(0);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response is in JSON format\", function () {\r",
+									"    //pm.response.to.be.header('Content-Type', /application/json);  // Check that Content-Type is application/json\r",
+									"    pm.response.to.have.jsonBody;  // Ensure the body is valid JSON\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response structure is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   pm.expect(jsonData).to.have.property(\"countFacets\");\r",
+									"   pm.expect(jsonData).to.have.property(\"artObjects\");\r",
+									"   pm.expect(jsonData).to.have.property(\"facets\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify collection response has required fields\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property('count');    \r",
+									"    pm.expect(jsonData).to.have.property('facets');\r",
+									"\r",
+									"    jsonData.artObjects.forEach(function(item) {\r",
+									"        pm.expect(item).to.have.property('id');\r",
+									"        pm.expect(item).to.have.property('objectNumber');\r",
+									"        pm.expect(item).to.have.property('title');\r",
+									"        pm.expect(item).to.have.property('principalOrFirstMaker'); \r",
+									"        pm.expect(item).to.have.property('longTitle');\r",
+									"        pm.expect(item).to.have.property('webImage');\r",
+									"        pm.expect(item).to.have.property('headerImage');\r",
+									"        //pm.expect(item).to.have.property('toppieces');            \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"//console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Verify that the count of art objects is equal to the total count\r",
+									"pm.test(\"Verify by default pagesize is 10\", function () {\r",
+									"    //pm.expect(countOfArtObjects).to.be.a('number');\r",
+									"    pm.expect(countOfArtObjects).is.equal(10); // Assuming page size is 10\r",
+									"});\r",
+									"\r",
+									"// Test to check that all objects have images when imgonly is true by default\r",
+									"pm.test(\"Verify by default imgonly have set to false for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {        \r",
+									"        pm.expect(artObject.hasImage).to.be.false;             \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"// Test to check that toppieces is false by default\r",
+									"pm.test(\"Verify by default toppieces have set to false for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {\r",
+									"        // Since toppieces defaults to false, we expect none of the art objects to be marked as toppieces\r",
+									"        pm.expect(artObject.toppieces).to.be.false;\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"// Extract the 'id' of the first art object\r",
+									"let lastArtObjectId = responseData.artObjects[9].id;\r",
+									"let objectNumber = responseData.artObjects[0].objectNumber;\r",
+									"let title = responseData.artObjects[0].title;\r",
+									"let principalOrFirstMaker = responseData.artObjects[0].principalOrFirstMaker;\r",
+									"let hasImage = responseData.artObjects[3].hasImage;\r",
+									"let webguid = responseData.artObjects[0].webImage.guid;\r",
+									"\r",
+									"// Log the 'id' 'objectNumber' to the Postman console\r",
+									"//console.log(\"Extracted artObject id of page 0: \" + lastArtObjectId);\r",
+									"//console.log(\"Extracted objectNumber of page 0: \" + objectNumber);\r",
+									"//console.log(\"Extracted title of page 0: \" + title);\r",
+									"//console.log(\"Extracted principalOrFirstMaker of page 0: \" + principalOrFirstMaker);\r",
+									"//console.log(\"Extracted hasImage of page 0: \" + hasImage);\r",
+									"//console.log(\"Extracted webguid of page 0: \" + webguid);\r",
+									"\r",
+									"// Store the 'id' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"artObjectId\", lastArtObjectId);  // For collection variable\r",
+									"\r",
+									"// Store the 'objectNumber' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"objectNumber\", objectNumber);  // For collection variable\r",
+									"\r",
+									"// Store the 'title' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"title\", title);  // For collection variable\r",
+									"\r",
+									"// Store the 'principalOrFirstMaker' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"principalOrFirstMaker\", principalOrFirstMaker);  // For collection variable\r",
+									"\r",
+									"// Store the 'hasImage' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"hasImage\", hasImage);  // For collection variable\r",
+									"\r",
+									"// Store the 'webguid' in a Postman environment or collection variable\r",
+									"pm.collectionVariables.set(\"webguid\", webguid);  // For collection variable"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					]
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Showing_Records_With_No_Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"//console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Test to check that all objects have images when imgonly is true by default\r",
+									"pm.test(\"Verify imgonly have set to false for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {        \r",
+									"        pm.expect(artObject.hasImage).to.be.false;             \r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&imgonly=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "imgonly",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_q",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if any object has 'Rembrandt' in any field\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if the response is an array and has objects\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    \r",
+									"    var found = jsonData.artObjects.some(function (item) {\r",
+									"        // Convert object values to a string and check if 'Rembrandt' is present\r",
+									"        return Object.values(item).some(function (value) {\r",
+									"            return value === 'Rembrandt';\r",
+									"        });\r",
+									"    });\r",
+									"    \r",
+									"    pm.expect(found).to.be.true; // Assert that at least one object has 'Rembrandt'\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&q=Rembrandt",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "q",
+									"value": "Rembrandt"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_involvedMaker",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt' in each artObject\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    \r",
+									"    // Check if the response contains 'artObjects' and it's an array\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    \r",
+									"    // Loop over each artObject\r",
+									"    jsonData.artObjects.forEach(function (item) {\r",
+									"        // Check if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt'\r",
+									"        pm.expect(item.principalOrFirstMaker).to.eql('Johan Gregor van der Schardt');\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&involvedMaker=Johan Gregor van der Schardt",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "involvedMaker",
+									"value": "Johan Gregor van der Schardt"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_f.dating.period",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if f.dating is in 10th century in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[2]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[2].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[2].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[2].facets[0];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('10');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&f.dating.period=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "f.dating.period",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_f.normalized32Colors.hex",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if f.normalized32Colors.hex is #F49B7A in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[6]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[6].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[6].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[6].facets[0];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('#F49B7A');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&f.normalized32Colors.hex=%23F49B7A",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "f.normalized32Colors.hex",
+									"value": "%23F49B7A"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Single_Filter_On_toppieces",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"//console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Test to check that toppieces is false by default\r",
+									"pm.test(\"Verify toppieces have set to true for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {\r",
+									"        // Since toppieces defaults to false, we expect none of the art objects to be marked as toppieces\r",
+									"        pm.expect(artObject.toppieces).to.be.true;\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&toppieces=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "toppieces",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Matching_To_Multiple_Filter_On_InvolvedMaker,f.datingperiod,imgonly,f.normalized32Colors.hex",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify collection response has required fields\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property('count');    \r",
+									"    pm.expect(jsonData).to.have.property('facets');\r",
+									"\r",
+									"    jsonData.artObjects.forEach(function(item) {\r",
+									"        pm.expect(item).to.have.property('id');\r",
+									"        pm.expect(item).to.have.property('objectNumber');\r",
+									"        pm.expect(item).to.have.property('title');\r",
+									"        pm.expect(item).to.have.property('principalOrFirstMaker'); \r",
+									"        pm.expect(item).to.have.property('longTitle');\r",
+									"        pm.expect(item).to.have.property('webImage');\r",
+									"        pm.expect(item).to.have.property('headerImage');\r",
+									"        //pm.expect(item).to.have.property('toppieces');            \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt' in each artObject\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    \r",
+									"    // Check if the response contains 'artObjects' and it's an array\r",
+									"    pm.expect(jsonData.artObjects).to.be.an('array');\r",
+									"    \r",
+									"    // Loop over each artObject\r",
+									"    jsonData.artObjects.forEach(function (item) {\r",
+									"        // Check if 'principalOrFirstMaker' is 'Johan Gregor van der Schardt'\r",
+									"        pm.expect(item.principalOrFirstMaker).to.eql('Johan Gregor van der Schardt');\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Verify imgonly have set to true for all objects in collection\", function () {\r",
+									"    responseData.artObjects.forEach(function (artObject) {        \r",
+									"        pm.expect(artObject.hasImage).to.be.true;             \r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify if f.dating is in 16th century in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[2]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[2].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[2].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[2].facets[0];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('16');\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify if f.normalized32Colors.hex is #737C84 in facets\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"\r",
+									"    // Check if 'facets' exists and is an array\r",
+									"    pm.expect(jsonData.facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the third item in 'facets' exists and is an object\r",
+									"    pm.expect(jsonData.facets[6]).to.be.an('object');\r",
+									"    \r",
+									"    // Check if 'facets' inside 'facets[2]' exists and is an array\r",
+									"    pm.expect(jsonData.facets[6].facets).to.be.an('array');\r",
+									"    \r",
+									"    // Check if the first item in the nested facets array exists\r",
+									"    pm.expect(jsonData.facets[6].facets[0]).to.be.an('object');\r",
+									"    \r",
+									"    // Access the first item inside 'facets[2].facets[0]'\r",
+									"    var facetItem = jsonData.facets[6].facets[2];\r",
+									"\r",
+									"    // Check if 'key' equals '10'   \r",
+									"    pm.expect(facetItem.key).to.eql('#737C84');\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&imgonly=true&involvedMaker=Johan Gregor van der Schardt&f.dating.period=16&f.normalized32Colors.hex=%23737C84",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "imgonly",
+									"value": "true"
+								},
+								{
+									"key": "involvedMaker",
+									"value": "Johan Gregor van der Schardt"
+								},
+								{
+									"key": "f.dating.period",
+									"value": "16"
+								},
+								{
+									"key": "f.normalized32Colors.hex",
+									"value": "%23737C84"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Showing_On_Single_Page_When_PageSize_Is_Set_To_Maximum_Limit_To_100",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Extract the count of art objects\r",
+									"let countOfArtObjects = responseData.artObjects.length;\r",
+									"\r",
+									"// Log the count to the Postman console\r",
+									"console.log(\"Count of artObjects in the response: \" + countOfArtObjects);\r",
+									"\r",
+									"// Verify that the count of art objects is equal to the total count\r",
+									"pm.test(\"Verify pagesize is 100\", function () {\r",
+									"    //pm.expect(countOfArtObjects).to.be.a('number');\r",
+									"    pm.expect(countOfArtObjects).is.equal(100); // Assuming page size is 10\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&ps=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "ps",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Showing_On_Multiple_Pages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"\r",
+									"// Loop over the artObjects array and check for page 0 object id\r",
+									"let found = false; // Flag to track if the id is found\r",
+									"\r",
+									"responseData.artObjects.forEach(function(artObject) {\r",
+									"    // Log each id for debugging purposes (optional)\r",
+									"    console.log(\"Checking id: \" + artObject.id);\r",
+									"    \r",
+									"    // Check if the id matches\r",
+									"    if (artObject.id === pm.collectionVariables.get(\"artObjectId\")) {\r",
+									"        found = true;\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"// Fail the test if Verify object id of page 0 is present\r",
+									"pm.test(\"Verify object id of page 0 is not present on page 1\", function() {\r",
+									"    pm.expect(found).to.be.false;  // Fail the test if found is true\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&p=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "p",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Result_Are_Sorted_By_Artist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Parse the response body as JSON\r",
+									"let responseData = pm.response.json();\r",
+									"let artObjects = responseData.artObjects;\r",
+									"\r",
+									"// Check if artObjects are sorted by artist in ascending order\r",
+									"pm.test(\"Verify results are sorted by artist in ascending order\", function () {\r",
+									"    let isSorted = true;\r",
+									"\r",
+									"    for (let i = 1; i < artObjects.length; i++) {\r",
+									"        // Compare the current artist with the previous artist\r",
+									"        if (artObjects[i].principalOrFirstMaker < artObjects[i - 1].principalOrFirstMaker) {\r",
+									"            isSorted = false;\r",
+									"            break; // No need to check further if already not sorted\r",
+									"        }\r",
+									"    }\r",
+									"\r",
+									"    pm.expect(isSorted).to.be.true;\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&s=artist",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "s",
+									"value": "artist"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Having_Detail_With_Required_Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify response contains object detail and it is not empty\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.artObject).to.be.an('object');\r",
+									"    pm.expect(Object.keys(jsonData.artObject).length).to.be.above(0);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response is in JSON format\", function () {\r",
+									"    //pm.response.to.be.header('Content-Type', /application/json);  // Check that Content-Type is application/json\r",
+									"    pm.response.to.have.jsonBody;  // Ensure the body is valid JSON\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify response structure is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   pm.expect(jsonData).to.have.property(\"artObject\");\r",
+									"   pm.expect(jsonData).to.have.property(\"artObjectPage\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"webImage\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify object has required fields\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"title\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"principalOrFirstMaker\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"description\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"materials\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"dating\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"documentation\");\r",
+									"   pm.expect(jsonData.artObject).to.have.property(\"dimensions\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/en/collection/{{objectNumber}}?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection",
+								"{{objectNumber}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Having_Valid_Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Search link is correct\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.artObject.links.search).to.eql(\"http://www.rijksmuseum.nl/api/en/collection\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Collection ID is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var objNumber = pm.collectionVariables.get(\"objectNumber\");   \r",
+									"   pm.expect(jsonData.artObject.objectNumber).to.eql(objNumber);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Title is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var title = pm.collectionVariables.get(\"title\");\r",
+									"   pm.expect(jsonData.artObject.title).to.eql(title); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify PrincipalOrFirstMaker is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var principalOrFirstMaker = pm.collectionVariables.get(\"principalOrFirstMaker\");\r",
+									"   pm.expect(jsonData.artObject.principalOrFirstMaker).to.eql(principalOrFirstMaker); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify hasImage is having correct flag set\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var hasImage = pm.collectionVariables.get(\"hasImage\");   \r",
+									"   pm.expect(jsonData.artObject.hasImage).to.eql(hasImage); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify webguid is correct\", function () {\r",
+									"   var jsonData = pm.response.json();\r",
+									"   var webguid = pm.collectionVariables.get(\"webguid\");   \r",
+									"   pm.expect(jsonData.artObject.webImage.guid).to.eql(webguid); \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/en/collection/{{objectNumber}}?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection",
+								"{{objectNumber}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_Is_In_XML_Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify collection response is in XML format\", function () {\r",
+									"    // Check the Content-Type header\r",
+									"    var contentType = pm.response.headers.get(\"Content-Type\");\r",
+									"    pm.expect(contentType).to.include(\"application/xml\");\r",
+									"    \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&format=xml",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "format",
+									"value": "xml"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Detail_Response_Is_In_XML_Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Verify object detail is in XML format\", function () {\r",
+									"    // Check the Content-Type header\r",
+									"    var contentType = pm.response.headers.get(\"Content-Type\");\r",
+									"    pm.expect(contentType).to.include(\"application/xml\");\r",
+									"    \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/en/collection/{{objectNumber}}?key={{key}}&format=xml",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection",
+								"{{objectNumber}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "format",
+									"value": "xml"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_key_Is_Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_key_Is_Missing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Detail_Response_When_ObjectNumber_Is_Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/en/collection/{{objectNumber}}1?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection",
+								"{{objectNumber}}1"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Object_Detail_Response_When_ObjectNumber_Is_Missing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/en/collection/?key={{key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection",
+								""
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_q_is_invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Expected Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&q=%23",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "q",
+									"value": "%23"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify_Collection_Response_When_f.dating.period_is_invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Expected Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/en/collection?key={{key}}&f.dating.period=january",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"en",
+								"collection"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "f.dating.period",
+									"value": "january"
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "artObjectId",
+			"value": ""
+		},
+		{
+			"key": "objectNumber",
+			"value": ""
+		},
+		{
+			"key": "title",
+			"value": ""
+		},
+		{
+			"key": "principalOrFirstMaker",
+			"value": ""
+		},
+		{
+			"key": "hasImage",
+			"value": ""
+		},
+		{
+			"key": "webguid",
+			"value": ""
 		}
 	]
 }
