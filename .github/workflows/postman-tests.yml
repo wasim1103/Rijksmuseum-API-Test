@@ -26,9 +26,6 @@ jobs:
         npm install -g newman
         npm install -g newman-reporter-html 
 
-    #- name: Run Postman Collection
-     # run: newman run ./rijksmuseum-api-collection.json --environment ./rijksmuseum_postman_environment.json
-
     - name: Create Results Directory
       run: mkdir -p results
     
